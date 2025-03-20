@@ -7,12 +7,10 @@
 
     <!-- CSS для захисту контенту -->
     <style>
-        /* Заборона копіювання та вибору тексту */
         body {
-            user-select: none;  /* Забороняє виділення тексту */
+            user-select: none; /* Забороняє виділення тексту */
         }
 
-        /* Стилізація для повідомлення */
         .alert-message {
             background-color: rgba(255, 0, 0, 0.5);
             color: white;
@@ -29,36 +27,20 @@
 <body>
     <h1>Вітаю!</h1>
     <p>Це тестова сторінка для книги по підписці.</p>
+    <div id="content"></div>
 
-    <!-- JavaScript для захисту контенту -->
+    <!-- JavaScript для захисту контенту та отримання даних з Google Таблиці -->
+    <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.0/src/tabletop.js"></script>
     <script>
-        // Запобігання скріншотам і спробам копіювати
-        let isScreenshotAttempted = false;
-
-        // Створюємо повідомлення
-        function showAlert(message) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert-message';
-            alertDiv.innerText = message;
-            document.body.appendChild(alertDiv);
-            alertDiv.style.display = 'block';
-            setTimeout(() => {
-                alertDiv.style.display = 'none';
-            }, 3000);
-        }
-
-        // Застереження при спробі зробити скріншот
+        // Захист від копіювання
         document.addEventListener('keydown', (event) => {
             if (event.key === 'PrintScreen' || (event.ctrlKey && event.key === 'S')) {
                 event.preventDefault();
-                if (!isScreenshotAttempted) {
-                    showAlert('Скріншоти заборонені на цьому сайті!');
-                    isScreenshotAttempted = true;
-                }
+                alert('Скріншоти заборонені на цьому сайті!');
             }
         });
 
-        // Водяний знак на сторінці
+        // Водяний знак
         const watermark = document.createElement('div');
         watermark.textContent = 'Водяний знак - автор: Ваше ім\'я';
         watermark.style.position = 'absolute';
@@ -68,8 +50,39 @@
         watermark.style.fontSize = '30px';
         watermark.style.color = 'rgba(255, 255, 255, 0.5)';
         watermark.style.zIndex = '999';
-        watermark.style.pointerEvents = 'none'; // щоб не заважати взаємодії
+        watermark.style.pointerEvents = 'none';
         document.body.appendChild(watermark);
+
+        // Завантаження даних з Google Sheets
+        window.onload = function () {
+            Tabletop.init({
+                key: 'YOUR_SPREADSHEET_ID', // ID таблиці
+                callback: showData,
+                simpleSheet: true
+            });
+        };
+
+        function showData(data) {
+            var contentDiv = document.getElementById("content");
+            data.forEach(function (row) {
+                var bookTitle = row.title;
+                var bookText = row.text;
+                var bookCover = row.cover;
+
+                var bookDiv = document.createElement("div");
+                var titleElement = document.createElement("h2");
+                titleElement.innerText = bookTitle;
+                var textElement = document.createElement("p");
+                textElement.innerText = bookText;
+                var coverElement = document.createElement("img");
+                coverElement.src = bookCover;
+
+                bookDiv.appendChild(titleElement);
+                bookDiv.appendChild(textElement);
+                bookDiv.appendChild(coverElement);
+                contentDiv.appendChild(bookDiv);
+            });
+        }
     </script>
 </body>
 </html>
